@@ -157,8 +157,8 @@ def save_sample_one_image(G, sample_path, real_images, epoch, z_dim, n_classes, 
 
     return number_real, number_fake
 
-def save_sample(path, images, step):
-    save_image(images.data[:100], os.path.join(path, '{}.png'.format(step + 1)), normalize=True, nrow=10)
+def save_sample(path, images, epoch):
+    save_image(images.data[:100], os.path.join(path, '{}.png'.format(epoch)), normalize=True, nrow=10)
 
 
 def compute_gradient_penalty(D, real_images, fake_images):
@@ -188,7 +188,7 @@ def compute_gradient_penalty_div(real_out, fake_out, real_images, fake_images, k
     real_grad = autograd.grad(
         outputs=real_out,
         inputs=real_images,
-        grad_outputs=torch.ones(real_images.size(0), 1).cuda(),
+        grad_outputs=torch.ones(real_images.size(0)).cuda(),
         retain_graph=True,
         create_graph=True,
         only_inputs=True          
@@ -198,7 +198,7 @@ def compute_gradient_penalty_div(real_out, fake_out, real_images, fake_images, k
     fake_grad = autograd.grad(
         outputs=fake_out,
         inputs=fake_images,
-        grad_outputs=torch.ones(fake_images.size(0), 1).cuda(),
+        grad_outputs=torch.ones(fake_images.size(0)).cuda(),
         retain_graph=True,
         create_graph=True,
         only_inputs=True,

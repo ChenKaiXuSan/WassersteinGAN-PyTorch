@@ -34,7 +34,7 @@ def get_parameters():
     parser.add_argument('--clip_value', type=float, default=0.01, help='lower and upper clip value for disc. weights')
 
     # Training setting
-    parser.add_argument('--epochs', type=int, default=500, help='numer of epochs of training')
+    parser.add_argument('--epochs', type=int, default=1000, help='numer of epochs of training')
     parser.add_argument('--d_iters', type=int, default=5)
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--num_workers', type=int, default=2)
@@ -78,7 +78,6 @@ def main(config):
     # delete the exists path
     del_folder(config.sample_path, config.version)
     del_folder(config.log_path, config.version)
-    del_folder(config.sample_path, config.version + '/real_images')
 
     # create directories if not exist
     make_folder(config.sample_path, config.version)

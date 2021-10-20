@@ -145,9 +145,6 @@ class Trainer_dcgan(object):
                     for p in self.D.parameters():
                         p.data.clamp_(-self.clip_value, self.clip_value)
 
-                # log to the tensorboard
-                self.logger.add_scalar('d_loss', d_loss.data, epoch)
-
                 # train the generator every 5 steps
                 if i % self.g_num == 0:
 
@@ -167,8 +164,10 @@ class Trainer_dcgan(object):
                     g_loss_fake.backward()
                     # update G
                     self.g_optimizer.step()
-                    # log to the tensorboard
-                    self.logger.add_scalar('g_loss_fake', g_loss_fake.data, epoch)
+
+            # log to the tensorboard
+            self.logger.add_scalar('d_loss', d_loss.data, epoch)
+            self.logger.add_scalar('g_loss_fake', g_loss_fake.data, epoch)
             # end one epoch
 
             # print out log info
