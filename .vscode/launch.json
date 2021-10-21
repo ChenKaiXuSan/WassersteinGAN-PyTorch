@@ -45,6 +45,27 @@
                 "--adv_loss",
                 "wgan-div"
             ]
+        },
+        {
+            "name": "dcgan_gan",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceRoot}/main.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--dataset",
+                "mnist",
+                "--channels",
+                "1",
+                "--sample_path",
+                "test_sample",
+                "--version",
+                "debug",
+                "--model",
+                "dcgan",
+                "--adv_loss",
+                "gan"
+            ]
         }
     ]
 }

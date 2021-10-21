@@ -1,6 +1,7 @@
 # WassersteinGAN-PyTorch
 ## Overview
 This repository contains an Pytorch implementation of WGAN, WGAN-GP, WGAN-DIV and original GAN loss function.
+With full coments and my code style.
 
 ## About WGAN
 If you're new to WassersteinGAN, here's an abstract straight from the paper[1]:
@@ -9,28 +10,28 @@ We introduce a new algorithm named WGAN, an alternative to traditional GAN train
 
 ## Dataset 
 - MNIST
+`python3 main.py --dataset mnist --channels 1`
 - FashionMNIST
+`python3 main.py --dataset fashion --channels 1`
 - Cifar10
+`python3 main.py --dataset cifar10 --channels 3`
 
 ## Implement
-```
+``` python
 usage: main.py [-h] [--model {gan,dcgan}]
                [--adv_loss {wgan-gp,gan,wgan-div,wgan}] [--img_size IMG_SIZE]
                [--channels CHANNELS] [--g_num G_NUM] [--z_dim Z_DIM]
                [--g_conv_dim G_CONV_DIM] [--d_conv_dim D_CONV_DIM]
                [--lambda_gp LAMBDA_GP] [--version VERSION]
-               [--lambda_aux LAMBDA_AUX] [--clip_value CLIP_VALUE]
-               [--epochs EPOCHS] [--d_iters D_ITERS] [--batch_size BATCH_SIZE]
-               [--num_workers NUM_WORKERS] [--g_lr G_LR] [--d_lr D_LR]
-               [--lr_decay LR_DECAY] [--beta1 BETA1] [--beta2 BETA2]
-               [--n_classes N_CLASSES] [--pretrained_model PRETRAINED_MODEL]
-               [--train TRAIN] [--parallel PARALLEL]
-               [--dataset {mnist,cifar10,fashion}]
+               [--clip_value CLIP_VALUE] [--epochs EPOCHS]
+               [--batch_size BATCH_SIZE] [--num_workers NUM_WORKERS]
+               [--g_lr G_LR] [--d_lr D_LR] [--beta1 BETA1] [--beta2 BETA2]
+               [--pretrained_model PRETRAINED_MODEL] [--train TRAIN]
+               [--parallel PARALLEL] [--dataset {mnist,cifar10,fashion}]
                [--use_tensorboard USE_TENSORBOARD] [--dataroot DATAROOT]
                [--log_path LOG_PATH] [--model_save_path MODEL_SAVE_PATH]
-               [--sample_path SAMPLE_PATH] [--attn_path ATTN_PATH]
-               [--log_step LOG_STEP] [--sample_step SAMPLE_STEP]
-               [--model_save_step MODEL_SAVE_STEP]
+               [--sample_path SAMPLE_PATH] [--log_step LOG_STEP]
+               [--sample_step SAMPLE_STEP] [--model_save_step MODEL_SAVE_STEP]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -44,36 +45,43 @@ optional arguments:
   --d_conv_dim D_CONV_DIM
   --lambda_gp LAMBDA_GP
                         for wgan gp
-  --version VERSION
-  --lambda_aux LAMBDA_AUX
-                        aux loss number
+  --version VERSION     the version of the path, for implement
   --clip_value CLIP_VALUE
-                        lower and upper clip value for disc. weights
+                        lower and upper clip value for disc. weights, from the
+                        wgan
   --epochs EPOCHS       numer of epochs of training
-  --d_iters D_ITERS
   --batch_size BATCH_SIZE
+                        batch size for the dataloader
   --num_workers NUM_WORKERS
   --g_lr G_LR           use TTUR lr rate for Adam
   --d_lr D_LR           use TTUR lr rate for Adam
-  --lr_decay LR_DECAY
   --beta1 BETA1
   --beta2 BETA2
-  --n_classes N_CLASSES
-                        how many labels in dataset
   --pretrained_model PRETRAINED_MODEL
   --train TRAIN
   --parallel PARALLEL
   --dataset {mnist,cifar10,fashion}
   --use_tensorboard USE_TENSORBOARD
-  --dataroot DATAROOT
-  --log_path LOG_PATH
+                        use tensorboard to record the loss
+  --dataroot DATAROOT   dataset path
+  --log_path LOG_PATH   the output log path
   --model_save_path MODEL_SAVE_PATH
+                        model save path
   --sample_path SAMPLE_PATH
-  --attn_path ATTN_PATH
-  --log_step LOG_STEP
+                        the generated sample saved path
+  --log_step LOG_STEP   every default{10} epoch save to the log
   --sample_step SAMPLE_STEP
+                        every default{100} epoch save the generated images and
+                        real images
   --model_save_step MODEL_SAVE_STEP
 ```
+## Usage
+- MNSIT
+`python3 main.py --dataset mnist --channels 1 --version [version] --batch_size [] --adv_loss [] >logs/[log_path]`
+- FashionMNIST
+`python3 main.py --dataset fashion --channels 1 --version [version] --batch_size [] --adv_loss [] >logs/[log_path]`
+- Cifar10
+`python3 main.py --dataset cifar10 --channels 3 -version [version] --batch_size [] --adv_loss [] >logs/[log_path]`
 
 ## Reference
 1. [WGAN](https://arxiv.org/abs/1701.07875)

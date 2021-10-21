@@ -62,25 +62,8 @@ def var2tensor(x):
 def var2numpy(x):
     return x.data.cpu().numpy()
 
-def denorm(x):
-    out = (x + 1) / 2
-    return out.clamp_(0, 1)
-
 def str2bool(v):
     return v.lower() in ('true')
-
-def to_LongTensor(labels):
-    '''
-    put input labels to LongTensor
-
-    Args:
-        labels (numpy): labels
-
-    Returns:
-        LongTensor: return LongTensor labels
-    '''    
-    LongTensor = torch.cuda.LongTensor if torch.cuda.is_available() else torch.LongTensor
-    return LongTensor(labels)
 
 def to_Tensor(x, *arg):
     Tensor = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.LongTensor
@@ -88,32 +71,18 @@ def to_Tensor(x, *arg):
 
 # custom weights initialization called on netG and netD
 def weights_init(m):
+    '''
+    custom weights initializaiont called on G and D, from the paper DCGAN
+
+    Args:
+        m (tensor): the network parameters
+    '''    
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
         nn.init.normal_(m.weight.data, 0.0, 0.02)
     elif classname.find('BatchNorm') != -1:
         nn.init.normal_(m.weight.data, 1.0, 0.02)
         nn.init.constant_(m.bias.data, 0)
-
-def init_weight(m):
-    classname = m.__class__.__name__
-
-    if classname.find('Conv') != -1:
-        nn.init.orthogonal_(m.weight, gain=1)
-        if m.bias is not None:
-            m.bias.data.zero_()
-    
-    elif classname.find('Batch') != -1:
-        m.weight.data.normal_(1, 0.02)
-        m.bias.data.zero_()
-
-    elif classname.find('Linear') != -1:
-        nn.init.orthogonal_(m.weight, gain=1)
-        if m.bias is not None:
-            m.bias.data.zero_()
-
-    elif classname.find('Embedding') != -1:
-        nn.init.orthogonal_(m.weight, gain=1)
 
 def save_sample_one_image(G, sample_path, real_images, epoch, z_dim, n_classes, number_real=0, number_fake=0):
     if epoch % 1000 == 0:
@@ -158,33 +127,68 @@ def save_sample_one_image(G, sample_path, real_images, epoch, z_dim, n_classes, 
     return number_real, number_fake
 
 def save_sample(path, images, epoch):
+    '''
+    save the tensor sample to nrow=10 image
+
+    Args:
+        path (str): saved path
+        images (tensor): images want to save
+        epoch (int): now epoch int, for the save image name
+    '''    
     save_image(images.data[:100], os.path.join(path, '{}.png'.format(epoch)), normalize=True, nrow=10)
 
-
+"""
+* compute the gradient penalty from the wgan
+"""
 def compute_gradient_penalty(D, real_images, fake_images):
-        # compute gradient penalty
-        alpha = torch.rand(real_images.size(0), 1, 1, 1).cuda().expand_as(real_images)
-        # 64, 1, 64, 64
-        interpolated = (alpha * real_images.data + ((1 - alpha) * fake_images.data)).requires_grad_(True)
-        # 64
-        out = D(interpolated)
-        # get gradient w,r,t. interpolates
-        grad = autograd.grad(
-            outputs=out,
-            inputs = interpolated,
-            grad_outputs = torch.ones(out.size()).cuda(),
-            retain_graph = True,
-            create_graph = True,
-            only_inputs = True
-        )[0]
+    '''
+    compute the gradient penalty where from the wgan-gp
 
-        grad = grad.view(grad.size(0), -1)
-        grad_l2norm = torch.sqrt(torch.sum(grad ** 2, dim=1))
-        gradient_penalty = torch.mean((grad_l2norm - 1) ** 2)
+    Args:
+        D ([Moudle]): Discriminator
+        real_images ([tensor]): real images from the dataset
+        fake_images ([tensor]): fake images from teh G(z)
 
-        return gradient_penalty
+    Returns:
+        [tensor]: computed the gradient penalty
+    '''        
+    # compute gradient penalty
+    alpha = torch.rand(real_images.size(0), 1, 1, 1).cuda().expand_as(real_images)
+    # (*, 1, 64, 64)
+    interpolated = (alpha * real_images.data + ((1 - alpha) * fake_images.data)).requires_grad_(True)
+    # (*,)
+    out = D(interpolated)
+    # get gradient w,r,t. interpolates
+    grad = autograd.grad(
+        outputs=out,
+        inputs = interpolated,
+        grad_outputs = torch.ones(out.size()).cuda(),
+        retain_graph = True,
+        create_graph = True,
+        only_inputs = True
+    )[0]
+
+    grad = grad.view(grad.size(0), -1)
+    grad_l2norm = torch.sqrt(torch.sum(grad ** 2, dim=1))
+    gradient_penalty = torch.mean((grad_l2norm - 1) ** 2)
+
+    return gradient_penalty
 
 def compute_gradient_penalty_div(real_out, fake_out, real_images, fake_images, k=2, p=6):
+    '''
+    compute the gradient with the padper wgan-div
+
+    Args:
+        real_out ([tensor]): D output from the real images, (*,)
+        fake_out ([tensor]): D output from the fake images, (*,)
+        real_images ([tensor]): real images from the dataset
+        fake_images ([tensor]): fake images from the G(z)
+        k (int, optional): [description]. Defaults to 2.
+        p (int, optional): [description]. Defaults to 6.
+
+    Returns:
+        [tensor]: computed the gradient penalty
+    '''    
     real_grad = autograd.grad(
         outputs=real_out,
         inputs=real_images,
@@ -193,7 +197,7 @@ def compute_gradient_penalty_div(real_out, fake_out, real_images, fake_images, k
         create_graph=True,
         only_inputs=True          
     )[0]
-    real_grad_norm = real_grad.view(real_grad.size(0), -1).pow(2).sum(1) ** (p/2)
+    real_grad_norm = real_grad.view(real_grad.size(0), -1).pow(2).sum(1) ** (p / 2)
 
     fake_grad = autograd.grad(
         outputs=fake_out,
@@ -203,7 +207,7 @@ def compute_gradient_penalty_div(real_out, fake_out, real_images, fake_images, k
         create_graph=True,
         only_inputs=True,
     )[0]
-    fake_grad_norm = fake_grad.view(fake_grad.size(0), -1).pow(2).sum(1) ** (p/2)
+    fake_grad_norm = fake_grad.view(fake_grad.size(0), -1).pow(2).sum(1) ** (p / 2)
 
     gradient_penalty = torch.mean(real_grad_norm + fake_grad_norm) * k / 2
     return gradient_penalty

@@ -40,24 +40,21 @@ class Trainer_dcgan(object):
         self.g_conv_dim = config.g_conv_dim
         self.d_conv_dim = config.d_conv_dim
         self.parallel = config.parallel
+        self.clip_value = config.clip_value
 
         self.lambda_gp = config.lambda_gp
         self.epochs = config.epochs
-        self.d_iters = config.d_iters
         self.batch_size = config.batch_size
         self.num_workers = config.num_workers 
         self.g_lr = config.g_lr
         self.d_lr = config.d_lr 
-        self.lr_decay = config.lr_decay
         self.beta1 = config.beta1
         self.beta2 = config.beta2
         self.pretrained_model = config.pretrained_model
-        self.n_classes = config.n_classes
-        self.lambda_aux = config.lambda_aux
-        self.clip_value = config.clip_value
 
         self.dataset = config.dataset 
         self.use_tensorboard = config.use_tensorboard
+        # path
         self.image_path = config.dataroot 
         self.log_path = config.log_path
         self.sample_path = config.sample_path
@@ -65,7 +62,7 @@ class Trainer_dcgan(object):
         self.sample_step = config.sample_step
         self.version = config.version
 
-        # path
+        # path with version
         self.log_path = os.path.join(config.log_path, self.version)
         self.sample_path = os.path.join(config.sample_path, self.version)
 
@@ -79,12 +76,6 @@ class Trainer_dcgan(object):
         Training
         '''
 
-        real_label = 0.9
-        fake_label = 0.0
-
-        # for gan loss to value
-        valid = tensor2var(torch.full((self.batch_size,), real_label))
-        fake = tensor2var(torch.full((self.batch_size,), fake_label))
         # fixed input for debugging
         fixed_z = tensor2var(torch.randn(self.batch_size, self.z_dim)) # （*, 100）
 
@@ -92,13 +83,17 @@ class Trainer_dcgan(object):
             # start time
             start_time = time.time()
 
-            for i, (real_images, labels) in enumerate(self.data_loader):
+            for i, (real_images, _) in enumerate(self.data_loader):
 
                 # configure input 
                 if self.adv_loss == 'wgan-div':
                     real_images = tensor2var(real_images, grad=True) # for wgan div to compute grad
                 else:
                     real_images = tensor2var(real_images)
+                
+                # adversarial ground truths
+                valid = tensor2var(torch.full((real_images.size(0),), 0.9)) # (*, )
+                fake = tensor2var(torch.full((real_images.size(0),), 0.0)) #(*, )
                 
                 # ==================== Train D ==================
                 self.D.train()
@@ -117,8 +112,8 @@ class Trainer_dcgan(object):
                 # noise z for generator
                 z = tensor2var(torch.randn(real_images.size(0), self.z_dim)) # 64, 100
 
-                fake_images = self.G(z)
-                d_out_fake = self.D(fake_images)
+                fake_images = self.G(z) # (*, c, 64, 64)
+                d_out_fake = self.D(fake_images) # (*,)
 
                 if self.adv_loss == 'wgan-gp' or self.adv_loss == 'wgan-div' or self.adv_loss == 'wgan':
                     d_loss_fake = torch.mean(d_out_fake)
@@ -195,13 +190,13 @@ class Trainer_dcgan(object):
 
     def build_model(self):
 
-        self.G = Generator(batch_size = self.batch_size, image_size = self.imsize, z_dim = self.z_dim, conv_dim = self.g_conv_dim, channels = self.channels, n_classes=self.n_classes).cuda()
-        self.D = Discriminator(batch_size = self.batch_size, image_size = self.imsize, conv_dim = self.d_conv_dim, channels = self.channels, n_classes=self.n_classes).cuda()
+        self.G = Generator(batch_size = self.batch_size, image_size = self.imsize, z_dim = self.z_dim, conv_dim = self.g_conv_dim, channels = self.channels).cuda()
+        self.D = Discriminator(batch_size = self.batch_size, image_size = self.imsize, conv_dim = self.d_conv_dim, channels = self.channels).cuda()
 
         # apply the weights_init to randomly initialize all weights
         # to mean=0, stdev=0.2
-        self.G.apply(init_weight)
-        self.D.apply(init_weight)
+        self.G.apply(weights_init)
+        self.D.apply(weights_init)
         
         # optimizer 
         if self.adv_loss == 'wgan':
