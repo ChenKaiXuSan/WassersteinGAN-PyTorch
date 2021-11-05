@@ -84,47 +84,39 @@ def weights_init(m):
         nn.init.normal_(m.weight.data, 1.0, 0.02)
         nn.init.constant_(m.bias.data, 0)
 
-def save_sample_one_image(G, sample_path, real_images, epoch, z_dim, n_classes, number_real=0, number_fake=0):
-    if epoch % 1000 == 0:
-        
-        make_folder(sample_path, str(epoch) + '/real_images')
-        make_folder(sample_path, str(epoch) + '/fake_images')
-        real_images_path = os.path.join(sample_path, str(epoch), 'real_images')
-        fake_images_path = os.path.join(sample_path, str(epoch), 'fake_images')
+def save_sample_one_image(sample_path, real_images, fake_images, epoch, number=0):
 
-        if len(os.listdir(real_images_path)) <= 1000:
+    make_folder(sample_path, str(epoch) + '/real_images')
+    make_folder(sample_path, str(epoch) + '/fake_images')
+    real_images_path = os.path.join(sample_path, str(epoch), 'real_images')
+    fake_images_path = os.path.join(sample_path, str(epoch), 'fake_images')
+
+    # saved image must more than 10000 sheet
+    # the number of the generaed images must larger than 10000 for the FID score.
+    while len(os.listdir(real_images_path)) <= 10000:
+        for i in range(real_images.size(0)):
             # save real image
-            for i in range(real_images.size(0)):
-                one_real_image = real_images[i]
-                save_image(
-                    one_real_image.data, 
-                    os.path.join(real_images_path, '{}_real.png'.format(number_real)),
-                    normalize=True
-                )
-                number_real += 1
+            one_real_image = real_images[i]
+            save_image(
+                one_real_image.data, 
+                os.path.join(real_images_path, '{}_real.png'.format(number)),
+                normalize=True
+            )
 
-            # save fake image 
-            # for generate sample
-                
+            # save fake image
+            one_fake_image = fake_images[i]
+            save_image(
+                one_fake_image.data,
+                os.path.join(fake_images_path, '{}_fake.png'.format(number)),
+                normalize=True
+            )
 
-            fixed_z = tensor2var(torch.randn(real_images.size(0), z_dim))
-            # labels = np.array([num for _ in range(n_classes) for num in range(n_classes)])
-            # labels = np.random.randint(0, n_classes, real_images.size(0))
-            with torch.no_grad():
-                # labels = to_LongTensor(labels)
-                gen_image = G(fixed_z)
+            number += 1
+        
+        if number == 10000:
+            break
 
-                for i in range(gen_image.size(0)):
-                    one_fake_image = gen_image[i]
-                    save_image(
-                        one_fake_image.data,
-                        os.path.join(fake_images_path, '{}_fake.png'.format(number_fake)),
-                        normalize = True,
-                        nrow=n_classes
-                    )
-                    number_fake += 1
-
-    return number_real, number_fake
+    return number
 
 def save_sample(path, images, epoch):
     '''

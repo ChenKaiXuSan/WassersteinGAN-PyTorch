@@ -62,6 +62,7 @@ optional arguments:
   --parallel PARALLEL
   --dataset {mnist,cifar10,fashion}
   --use_tensorboard USE_TENSORBOARD
+  
                         use tensorboard to record the loss
   --dataroot DATAROOT   dataset path
   --log_path LOG_PATH   the output log path
@@ -82,6 +83,22 @@ optional arguments:
 `python3 main.py --dataset fashion --channels 1 --version [version] --batch_size [] --adv_loss [] >logs/[log_path]`
 - Cifar10
 `python3 main.py --dataset cifar10 --channels 3 -version [version] --batch_size [] --adv_loss [] >logs/[log_path]`
+
+## FID
+FID is a measure of similarity between two datasets of images. It was shown to correlate well with human judgement of visual quality and is most often used to evaluate the quality of samples of Generative Adversarial Networks. FID is calculated by computing the Fréchet distance between two Gaussians fitted to feature representations of the Inception network.
+
+For the FID, I use the pytorch implement of this repository. [FID score for PyTorch](https://github.com/mseitzer/pytorch-fid)
+
+- MNIST
+For the 10k epochs training on MNIST dataset, compare with about 2430 samples, I get the FID: 
+
+| dataset | wgan | wgan-gp | wgan-div |
+| ---- | ---- | ---- | ---- |
+| MNIST | 47.26201497530761 | 108.48196049057748 | 83.1224650636957 |
+| FASHION-MNIST | NULL | NULL | NULL
+| CIFAR10 | NULL | 160.36441830128024 | 124.66761784583213 |
+ 
+> :warning: I dont konw if the FID is right or not, because I cant get the lowwer score like the paper or the other people get it. 
 
 ## Reference
 1. [WGAN](https://arxiv.org/abs/1701.07875)

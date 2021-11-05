@@ -185,7 +185,8 @@ class Trainer_dcgan(object):
                     save_sample(self.sample_path + '/fake_images/', fake_images, epoch)
                     
                 # sample sample one images
-                # self.number_real, self.number_fake = save_sample_one_image(self.G, self.sample_path, real_images, epoch, z_dim=self.z_dim, n_classes=self.n_classes)
+                # for the FID score
+                self.number = save_sample_one_image(self.sample_path, real_images, fake_images, epoch)
 
 
     def build_model(self):
