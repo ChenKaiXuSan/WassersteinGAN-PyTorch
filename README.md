@@ -96,7 +96,7 @@ For the 10k epochs training on MNIST dataset, compare with about 2430 samples, I
 | ---- | ---- | ---- | ---- |
 | MNIST | 47.26201497530761 | 108.48196049057748 | 83.1224650636957 |
 | FASHION-MNIST | 75.43994192943677 | NULL | NULL
-| CIFAR10 | NULL | 160.36441830128024 | 124.66761784583213 |
+| CIFAR10 | 121.84612610331084 | 160.36441830128024 | 124.66761784583213 |
  
 > :warning: I dont konw if the FID is right or not, because I cant get the lowwer score like the paper or the other people get it. 
 

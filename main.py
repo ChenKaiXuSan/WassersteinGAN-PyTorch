@@ -6,7 +6,7 @@ from utils.utils import *
 from dataset.dataset import getdDataset
 
 # set the gpu number
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 import argparse
 # %%
