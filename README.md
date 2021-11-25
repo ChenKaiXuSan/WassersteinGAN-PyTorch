@@ -98,10 +98,11 @@ For the 10k epochs training on different dataset, compare with about 10000 sampl
 | dataset | wgan | wgan-gp | wgan-div |
 | ---- | ---- | ---- | ---- |
 | MNIST | 47.26201497530761 | 108.48196049057748 | 83.1224650636957 |
-| FASHION-MNIST | 75.43994192943677 | 105.3054054076465 | NULL
+| FASHION-MNIST | 75.43994192943677 | 105.3054054076465 | 104.15034819535245
 | CIFAR10 | 121.84612610331084 | 160.36441830128024 | 124.66761784583213 |
  
 > :warning: I dont konw if the FID is right or not, because I cant get the lowwer score like the paper or the other people get it. 
+> And then i dont think this implement is successful, because the fid is very high.
 
 ## Reference
 1. [WGAN](https://arxiv.org/abs/1701.07875)
